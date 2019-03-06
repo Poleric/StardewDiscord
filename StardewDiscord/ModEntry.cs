@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -33,9 +33,19 @@ namespace StardewDiscord
         private Dictionary<int, string> emojis;
         private Settings settings;
 
+        Dictionary<string, string> special_char = new Dictionary<string, string>() { { "=", "☆" }, { "$", "⭗" }, { "*", "💢" }, { "@", "◁" }, { "<", "♡" }, { ">", "▷" } };
+
         struct Settings
         {
             public Dictionary<string, string> farms { get; set; }
+        }
+
+        private string replaceSpecialChar(string msg)
+        {
+            foreach (string s in special_char.Keys) {
+                msg = msg.Replace(s, special_char[s]);
+            }
+            return msg;
         }
 
         /// <summary>Loads settings from config file.</summary>
@@ -52,6 +62,7 @@ namespace StardewDiscord
         /// <param name="notification">Indicates whether message should be treated as a notification</param>
         private async Task SendMessage(string msg, string farm, bool notification = false)
         {
+            msg = replaceSpecialChar(msg);
             string url = settings.farms[farm];
             if (notification)
             {
