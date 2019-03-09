@@ -21,7 +21,9 @@ namespace StardewDiscord
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
+            helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
             helper.Events.GameLoop.OneSecondUpdateTicked += this.OnOneSecondUpdateTicked;
+            helper.Events.GameLoop.Saved += this.OnSaved;
             string emojiFile = Path.Combine(helper.DirectoryPath, "emojis.json");
             loadEmojis(emojiFile);
             string settingsFile = Path.Combine(helper.DirectoryPath, "config.json");
@@ -32,6 +34,7 @@ namespace StardewDiscord
         private int lastMsg = 0;
         private Dictionary<int, string> emojis;
         private Settings settings;
+        List<ChatMessage> messages = new List<ChatMessage>();
 
         Dictionary<string, string> special_char = new Dictionary<string, string>() { { "=", "☆" }, { "$", "⭗" }, { "*", "💢" }, { "@", "◁" }, { "<", "♡" }, { ">", "▷" } };
 
@@ -100,23 +103,12 @@ namespace StardewDiscord
         /// <summary>Raised once every second.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event data.</param>
-        private void OnOneSecondUpdateTicked(object sender, OneSecondUpdateTickedEventArgs e)
+        private async void OnOneSecondUpdateTicked(object sender, OneSecondUpdateTickedEventArgs e)
         {
-            // ignore if player hasn't loaded a save yet
-            if (!Context.IsWorldReady)
-                return;
-
-            string temp = Game1.player.farmName;
-
-            messagesField = Helper.Reflection.GetField<List<ChatMessage>>(Game1.chatBox, "messages");
-            msgCount = messagesField.GetValue().Count;
-            if (msgCount == 0) { return; }
-            if (messagesField.GetValue()[msgCount - 1].GetHashCode() != lastMsg)
+            foreach(ChatMessage message in messages)
             {
-                lastMsg = messagesField.GetValue()[msgCount - 1].GetHashCode();
-                
                 string msg = "";
-                foreach(ChatSnippet m in messagesField.GetValue()[msgCount - 1].message)
+                foreach (ChatSnippet m in message.message)
                 {
                     msg += m.message;
                     if (m.message == null)
@@ -129,14 +121,56 @@ namespace StardewDiscord
                         else { Monitor.Log($"Could not find emoji with index {m.emojiIndex}", LogLevel.Info); }
                     }
                 }
-                if (messagesField.GetValue()[msgCount - 1].color == Color.Yellow && msg.IndexOf(">  -") != 0) {
-                    SendMessage(msg, Game1.player.farmName, true);
-                }
-                else if (getPlayers().Contains(messagesField.GetValue()[msgCount - 1].message[0].message.Split(':')[0]))
+                if (message.color == Color.Yellow && msg.IndexOf(">  -") != 0)
                 {
-                    SendMessage(msg, Game1.player.farmName);
+                    await SendMessage(msg, Game1.player.farmName, true);
+                }
+                else if (getPlayers().Contains(message.message[0].message.Split(':')[0]))
+                {
+                    await SendMessage(msg, Game1.player.farmName);
                 }
             }
+            messages.Clear();
+        }
+
+        /// <summary>Raised once every tick.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
+        private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
+        {
+            if (!Context.IsWorldReady)
+                return;
+
+            messagesField = Helper.Reflection.GetField<List<ChatMessage>>(Game1.chatBox, "messages");
+            msgCount = messagesField.GetValue().Count;
+            if (msgCount == 0) { return; }
+
+            ChatMessage message = messagesField.GetValue()[msgCount - 1];
+            if (message.GetHashCode() != lastMsg)
+            {
+                lastMsg = message.GetHashCode();
+                messages.Add(message);
+            }
+        }
+
+        /// <summary>Raised once after game is saved.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
+        private void OnSaved(object sender, SavedEventArgs e)
+        {
+            messagesField = Helper.Reflection.GetField<List<ChatMessage>>(Game1.chatBox, "messages");
+            msgCount = messagesField.GetValue().Count;
+            if (msgCount == 0) { return; }
+
+            int count = 1;
+            ChatMessage message = messagesField.GetValue()[msgCount - count];
+            while (message.GetHashCode() != lastMsg)
+            {
+                messages.Add(message);
+                message = messagesField.GetValue()[msgCount - ++count];
+            }
+            lastMsg = messagesField.GetValue()[msgCount - 1].GetHashCode();
+            messages.Reverse();
         }
     }
 }
