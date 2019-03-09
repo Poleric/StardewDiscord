@@ -62,6 +62,9 @@ namespace StardewDiscord
         /// <param name="notification">Indicates whether message should be treated as a notification</param>
         private async Task SendMessage(string msg, string farm, bool notification = false)
         {
+            if (!settings.farms.ContainsKey(farm))
+                return;
+
             msg = replaceSpecialChar(msg);
             string url = settings.farms[farm];
             if (notification)
