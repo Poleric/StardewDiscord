@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Flurl.Http;
 using Newtonsoft.Json;
 using System.IO;
+using Entoarox.Framework.UI;
 
 namespace StardewDiscord
 {
@@ -25,6 +26,7 @@ namespace StardewDiscord
             loadEmojis(emojiFile);
             string settingsFile = Path.Combine(helper.DirectoryPath, "config.json");
             loadSettings(settingsFile);
+            helper.ConsoleCommands.Add("discord", "Opens the Stardew Discord config menu.", this.ShowConfig);
         }
         private IReflectedField<List<ChatMessage>> messagesField;
         int msgCount;
@@ -54,6 +56,18 @@ namespace StardewDiscord
         {
             string json = File.ReadAllText(file);
             settings = JsonConvert.DeserializeObject<Settings>(json);
+        }
+
+        private void ShowConfig(string command, string[] args)
+        {
+            FrameworkMenu Menu = new FrameworkMenu(new Point(200, 40));
+            TextComponent label = new TextComponent(new Point(0, 0), "Webhook URL:");
+            TextboxFormComponent webhookUrlTextbox = new TextboxFormComponent(new Point(0, 8), 175, null);
+            ButtonFormComponent setButton = new ButtonFormComponent(new Point(0, 21), "Set");
+            Menu.AddComponent(label);
+            Menu.AddComponent(webhookUrlTextbox);
+            Menu.AddComponent(setButton);
+            Game1.activeClickableMenu = Menu;
         }
 
         /// <summary>Sends message to a Discord channel via webhook.</summary>
