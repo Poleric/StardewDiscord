@@ -6,5 +6,5 @@
   "UniqueID": "StevenKraft.StardewDiscord",
   "EntryDll": "StardewDiscord.dll",
   "MinimumApiVersion": "2.10.0",
-  "UpdateKeys": []
+  "UpdateKeys": [ "Nexus:3608" ]
 }
