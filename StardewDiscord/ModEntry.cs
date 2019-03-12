@@ -25,9 +25,9 @@ namespace StardewDiscord
             helper.Events.GameLoop.OneSecondUpdateTicked += this.OnOneSecondUpdateTicked;
             helper.Events.GameLoop.Saved += this.OnSaved;
             emojiFile = Path.Combine(helper.DirectoryPath, "emojis.json");
-            loadEmojis(emojiFile);
+            LoadEmojis(emojiFile);
             settingsFile = Path.Combine(helper.DirectoryPath, "config.json");
-            loadSettings(settingsFile);
+            LoadSettings(settingsFile);
             helper.ConsoleCommands.Add("discord", "Opens the Stardew Discord config menu.", this.ShowConfig);
         }
         private IReflectedField<List<ChatMessage>> messagesField;
@@ -46,7 +46,7 @@ namespace StardewDiscord
             public Dictionary<string, string> farms { get; set; }
         }
 
-        private string replaceSpecialChar(string msg)
+        private string ReplaceSpecialChar(string msg)
         {
             foreach (string s in special_char.Keys) {
                 msg = msg.Replace(s, special_char[s]);
@@ -56,7 +56,7 @@ namespace StardewDiscord
 
         /// <summary>Loads settings from config file.</summary>
         /// <param name="file">Name of config file.</param>
-        private void loadSettings(string file)
+        private void LoadSettings(string file)
         {
             string json = File.ReadAllText(file);
             settings = JsonConvert.DeserializeObject<Settings>(json);
@@ -133,7 +133,7 @@ namespace StardewDiscord
             if (!settings.farms.ContainsKey(farm))
                 return;
 
-            msg = replaceSpecialChar(msg);
+            msg = ReplaceSpecialChar(msg);
             string url = settings.farms[farm];
             if (notification)
             {
@@ -148,14 +148,14 @@ namespace StardewDiscord
 
         /// <summary>Loads emoji aliases from config file.</summary>
         /// <param name="file">Name of config file.</param>
-        private void loadEmojis(string file)
+        private void LoadEmojis(string file)
         {
             string json = File.ReadAllText(file);
             emojis = JsonConvert.DeserializeObject<Dictionary<int, string>>(json);
         }
 
         /// <summary>Returns a list of active players.</summary>
-        private List<string> getPlayers()
+        private List<string> GetPlayers()
         {
             List<string> players = new List<string>();
             foreach (Farmer farmer in Game1.getOnlineFarmers())
@@ -190,7 +190,7 @@ namespace StardewDiscord
                 {
                     await SendMessage(msg, Game1.player.farmName, true);
                 }
-                else if (getPlayers().Contains(message.message[0].message.Split(':')[0]))
+                else if (GetPlayers().Contains(message.message[0].message.Split(':')[0]))
                 {
                     await SendMessage(msg, Game1.player.farmName);
                 }
