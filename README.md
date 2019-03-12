@@ -10,9 +10,11 @@
 * Install [SMAPI](https://smapi.io/)
 * Extract latest release to mods folder
 * Create a new [webhook](https://support.discordapp.com/hc/en-us/articles/228383668-Intro-to-Webhooks) on Discord
-* Open config.json in a text editor
-* Replace `FARM NAME` with the name of your farm. (case sensitive, exclude the word "farm")
-* Replace `DISCORD URL` with the webhook URL provided by Discord
+* Launch game and load farm
+* Type "discord" in SMAPI console, or "/discord" in chat if you are using [Chat Commands](https://www.nexusmods.com/stardewvalley/mods/2092/)
+* Paste webhook URL in the text box and click the "set" button
+![](config.jpg)
+
 
 #### Adding/Changing Emojis
 
