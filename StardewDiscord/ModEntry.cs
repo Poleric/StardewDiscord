@@ -43,7 +43,7 @@ namespace StardewDiscord
 
         struct Settings
         {
-            public Dictionary<string, string> farms { get; set; }
+            public Dictionary<string, string> Farms { get; set; }
         }
 
         private string ReplaceSpecialChar(string msg)
@@ -78,29 +78,29 @@ namespace StardewDiscord
             Menu.AddComponent(iconTexture);
             Game1.activeClickableMenu = Menu;
         }
- 
+
+        /// <summary>Associates webhook with current farm</summary>
+        /// <param name="url">Url of Discord Webhook</param>
+        /// <param name="farm">Name of current farm</param>
         private async void SetWebhook(string url, string farm)
         {
             string name = await GetWebhookName(url);
             if (name != null)
             {
-                AddFarmToConfig(farm, url);
-                if (settings.farms.ContainsKey(farm) && settings.farms[farm] == url)
+                settings.Farms[farm] = url;
+                string json = JsonConvert.SerializeObject(settings);
+                File.WriteAllText(settingsFile, json);
+                if (settings.Farms.ContainsKey(farm) && settings.Farms[farm] == url)
                 {
-                    ShowSuccessMessage($"Connected {Game1.player.farmName} Farm's chat with Webhook: {name}");
+                    ShowSuccessMessage($"Connected {farm} Farm's chat with Webhook: {name}");
                 }
             }
             else { ShowFailureMessage("Invalid Webhook"); }
             Game1.activeClickableMenu = null;
         }
 
-        private void AddFarmToConfig(string farm, string url)
-        {
-            settings.farms[farm] = url;
-            string json = JsonConvert.SerializeObject(settings);
-            File.WriteAllText(settingsFile, json);
-        }
-
+        /// <summary>Gets username of Discord Webhook</summary>
+        /// <param name="url">Url of Discord Webhook</param>
         private static async Task<string> GetWebhookName(string url)
         {
             if (!Uri.IsWellFormedUriString(url, UriKind.Absolute)) { return null; }
@@ -114,11 +114,15 @@ namespace StardewDiscord
             return result.name;
         }
 
+        /// <summary>Shows success popup message</summary>
+        /// <param name="message">Message to display</param>
         private void ShowSuccessMessage(string message)
         {
             Game1.addHUDMessage(new HUDMessage(message, HUDMessage.stamina_type));
         }
 
+        /// <summary>Shows failure popup message</summary>
+        /// <param name="message">Message to display</param>
         private void ShowFailureMessage(string message)
         {
             Game1.addHUDMessage(new HUDMessage(message, HUDMessage.error_type));
@@ -130,11 +134,11 @@ namespace StardewDiscord
         /// <param name="notification">Indicates whether message should be treated as a notification</param>
         private async Task SendMessage(string msg, string farm, bool notification = false)
         {
-            if (!settings.farms.ContainsKey(farm))
+            if (!settings.Farms.ContainsKey(farm))
                 return;
 
             msg = ReplaceSpecialChar(msg);
-            string url = settings.farms[farm];
+            string url = settings.Farms[farm];
             if (notification)
             {
                 object data = new { embeds = new List<object> { new { description = $"**{msg}**", color = 16098851 } } };
