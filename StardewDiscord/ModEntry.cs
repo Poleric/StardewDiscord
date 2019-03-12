@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using StardewModdingAPI;
@@ -5,9 +6,11 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Flurl.Http;
 using Newtonsoft.Json;
 using System.IO;
+using Entoarox.Framework.UI;
 
 namespace StardewDiscord
 {
@@ -21,15 +24,18 @@ namespace StardewDiscord
             helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
             helper.Events.GameLoop.OneSecondUpdateTicked += this.OnOneSecondUpdateTicked;
             helper.Events.GameLoop.Saved += this.OnSaved;
-            string emojiFile = Path.Combine(helper.DirectoryPath, "emojis.json");
+            emojiFile = Path.Combine(helper.DirectoryPath, "emojis.json");
             LoadEmojis(emojiFile);
-            string settingsFile = Path.Combine(helper.DirectoryPath, "config.json");
+            settingsFile = Path.Combine(helper.DirectoryPath, "config.json");
             LoadSettings(settingsFile);
+            helper.ConsoleCommands.Add("discord", "Opens the Stardew Discord config menu.", this.ShowConfig);
         }
         private IReflectedField<List<ChatMessage>> messagesField;
         int msgCount;
         private int lastMsg = 0;
+        private string emojiFile;
         private Dictionary<int, string> emojis;
+        private string settingsFile;
         private Settings settings;
         List<ChatMessage> messages = new List<ChatMessage>();
 
@@ -54,6 +60,68 @@ namespace StardewDiscord
         {
             string json = File.ReadAllText(file);
             settings = JsonConvert.DeserializeObject<Settings>(json);
+        }
+
+        private void ShowConfig(string command, string[] args)
+        {
+            if (!Context.IsWorldReady)
+                return;
+            FrameworkMenu Menu = new FrameworkMenu(new Point(200, 40));
+            TextComponent label = new TextComponent(new Point(0, 0), "Webhook URL:");
+            TextboxFormComponent webhookUrlTextbox = new TextboxFormComponent(new Point(0, 8), 175, null);
+            ButtonFormComponent setButton = new ButtonFormComponent(new Point(0, 21), "Set", (t, p, m) =>  this.SetWebhook(webhookUrlTextbox.Value, Game1.player.farmName));
+            Texture2D icon = this.Helper.Content.Load<Texture2D>("assets/icon.png");
+            TextureComponent iconTexture = new TextureComponent(new Rectangle(-16, -16, 16, 16), icon);
+            Menu.AddComponent(label);
+            Menu.AddComponent(webhookUrlTextbox);
+            Menu.AddComponent(setButton);
+            Menu.AddComponent(iconTexture);
+            Game1.activeClickableMenu = Menu;
+        }
+ 
+        private async void SetWebhook(string url, string farm)
+        {
+            string name = await GetWebhookName(url);
+            if (name != null)
+            {
+                AddFarmToConfig(farm, url);
+                if (settings.farms.ContainsKey(farm) && settings.farms[farm] == url)
+                {
+                    ShowSuccessMessage($"Connected {Game1.player.farmName} Farm's chat with Webhook: {name}");
+                }
+            }
+            else { ShowFailureMessage("Invalid Webhook"); }
+            Game1.activeClickableMenu = null;
+        }
+
+        private void AddFarmToConfig(string farm, string url)
+        {
+            settings.farms[farm] = url;
+            string json = JsonConvert.SerializeObject(settings);
+            File.WriteAllText(settingsFile, json);
+        }
+
+        private static async Task<string> GetWebhookName(string url)
+        {
+            if (!Uri.IsWellFormedUriString(url, UriKind.Absolute)) { return null; }
+            string json = await url.GetStringAsync();
+            dynamic result;
+            try
+            {
+                result = JsonConvert.DeserializeObject<dynamic>(json);
+            }
+            catch (JsonReaderException e) { return null; }
+            return result.name;
+        }
+
+        private void ShowSuccessMessage(string message)
+        {
+            Game1.addHUDMessage(new HUDMessage(message, HUDMessage.stamina_type));
+        }
+
+        private void ShowFailureMessage(string message)
+        {
+            Game1.addHUDMessage(new HUDMessage(message, HUDMessage.error_type));
         }
 
         /// <summary>Sends message to a Discord channel via webhook.</summary>
