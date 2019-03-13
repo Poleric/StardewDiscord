@@ -105,13 +105,13 @@ namespace StardewDiscord
         {
             if (!Uri.IsWellFormedUriString(url, UriKind.Absolute)) { return null; }
             string json = await url.GetStringAsync();
-            dynamic result;
+            Dictionary<string, string> result;
             try
             {
-                result = JsonConvert.DeserializeObject<dynamic>(json);
+                result = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
             }
             catch (JsonReaderException e) { return null; }
-            return result.name;
+            return result["name"];
         }
 
         /// <summary>Shows success popup message</summary>
