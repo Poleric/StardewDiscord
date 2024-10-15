@@ -35,16 +35,12 @@
     <PackageReference Include="Flurl.Http" Version="4.0.2"/>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
     <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.3.0"/>
-    <Reference Include="EntoaroxFramework">
-      <HintPath>.\EntoaroxFramework.dll</HintPath>
-    </Reference>
   </ItemGroup>
   
   <ItemGroup>
     <Content Include="assets\icon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="EntoaroxFramework.dll" />
     <Content Include="config.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

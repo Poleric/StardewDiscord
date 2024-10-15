@@ -5,12 +5,10 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Flurl.Http;
 using Newtonsoft.Json;
 using System.IO;
-using Entoarox.Framework.UI;
+using Microsoft.Xna.Framework;
 
 namespace StardewDiscord
 {
@@ -66,17 +64,8 @@ namespace StardewDiscord
         {
             if (!Context.IsWorldReady)
                 return;
-            FrameworkMenu Menu = new FrameworkMenu(new Point(200, 40));
-            TextComponent label = new TextComponent(new Point(0, 0), "Webhook URL:");
-            TextboxFormComponent webhookUrlTextbox = new TextboxFormComponent(new Point(0, 8), 175, null);
-            ButtonFormComponent setButton = new ButtonFormComponent(new Point(0, 21), "Set", (t, p, m) =>  this.SetWebhook(webhookUrlTextbox.Value, Game1.player.farmName));
-            Texture2D icon = this.Helper.Content.Load<Texture2D>("assets/icon.png");
-            TextureComponent iconTexture = new TextureComponent(new Rectangle(-16, -16, 16, 16), icon);
-            Menu.AddComponent(label);
-            Menu.AddComponent(webhookUrlTextbox);
-            Menu.AddComponent(setButton);
-            Menu.AddComponent(iconTexture);
-            Game1.activeClickableMenu = Menu;
+            
+            // TODO: do gui      
         }
 
         /// <summary>Associates webhook with current farm</summary>
