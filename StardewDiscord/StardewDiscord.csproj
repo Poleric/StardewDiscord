@@ -7,6 +7,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>Latest</LangVersion>
     <FileAlignment>512</FileAlignment>
+    <BundleExtraAssemblies>ThirdParty</BundleExtraAssemblies>
   </PropertyGroup>
   
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
