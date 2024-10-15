@@ -30,7 +30,7 @@ namespace StardewDiscord
         }
         private IReflectedField<List<ChatMessage>> messagesField;
         int msgCount;
-        private int lastMsg = 0;
+        private int lastMsg;
         private string emojiFile;
         private Dictionary<int, string> emojis;
         private string settingsFile;
@@ -99,7 +99,7 @@ namespace StardewDiscord
             {
                 result = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
             }
-            catch (JsonReaderException e) { return null; }
+            catch (JsonReaderException) { return null; }
             return result["name"];
         }
 
@@ -131,11 +131,11 @@ namespace StardewDiscord
             if (notification)
             {
                 object data = new { embeds = new List<object> { new { description = $"**{msg}**", color = 16098851 } } };
-                var responseString = await url.PostJsonAsync(data);
+                await url.PostJsonAsync(data);
             }
             else
             {
-                var responseString = await url.PostUrlEncodedAsync(new { content = msg }).ReceiveString();
+                await url.PostUrlEncodedAsync(new { content = msg }).ReceiveString();
             }
         }
 
@@ -153,7 +153,7 @@ namespace StardewDiscord
             List<string> players = new List<string>();
             foreach (Farmer farmer in Game1.getOnlineFarmers())
             {
-                players.Add(farmer.name.ToString());
+                players.Add(farmer.Name);
             }
             return players;
         }
@@ -181,11 +181,11 @@ namespace StardewDiscord
                 }
                 if (message.color == Color.Yellow && msg.IndexOf(">  -") != 0)
                 {
-                    await SendMessage(msg, Game1.player.farmName, true);
+                    await SendMessage(msg, Game1.player.farmName.Value, true);
                 }
                 else if (GetPlayers().Contains(message.message[0].message.Split(':')[0]))
                 {
-                    await SendMessage(msg, Game1.player.farmName);
+                    await SendMessage(msg, Game1.player.farmName.Value);
                 }
             }
             messages.Clear();
